@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Spin the Wheel</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#030d14;--g1:#4fbf8a;--g2:#2b8a68;--g3:#0e4a3a;--bl:#6fa8f0;--ink:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*:before,*:after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;color:var(--ink);font-family:'VT323','Courier New',monospace;font-size:21px;overflow-x:hidden;background-color:var(--bg);
+background-image:radial-gradient(ellipse at 15% 8%,#2c5fa844,transparent 50%),radial-gradient(ellipse at 88% 78%,#1f8a6444,transparent 55%),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cg fill='none' stroke='%2352c98f' stroke-opacity='.15' stroke-width='3'%3E%3Cpath d='M30 10l6 18 18 2-14 11 5 18-15-10-15 10 5-18L6 30l18-2z'/%3E%3Cpath d='M120 90l4 11 11 1-9 7 3 11-9-7-9 7 3-11-9-7 11-1z'/%3E%3C/g%3E%3C/svg%3E"),linear-gradient(165deg,#071a38 0%,#0a3550 28%,#0b4a47 55%,#0b3d26 80%,#04150d 100%);background-attachment:fixed}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:5;background:repeating-linear-gradient(0deg,#0000 0 2px,#00000055 2px 4px);mix-blend-mode:multiply}
+body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:4;opacity:.12;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E")}
+#bin{position:fixed;top:0;right:4px;width:70px;font-size:15px;line-height:1;color:#fff;opacity:.35;word-break:break-all;pointer-events:none;height:100%;overflow:hidden}
+main{position:relative;z-index:2;max-width:980px;margin:0 auto;padding:22px 16px 40px}
+h1{font-family:'Rubik Mono One',Impact,sans-serif;font-weight:400;font-size:clamp(34px,9vw,76px);line-height:.92;margin:0 0 6px;color:#fff;text-shadow:3px 0 #12365f,0 0 18px #2b8a68aa;transform:skewX(-6deg);letter-spacing:-1px}
+.tag{margin:0 0 20px;color:#fff;font-size:22px}
+.panel,.hour{border:2px solid var(--g2);background:#03121acc;padding:14px;box-shadow:0 0 14px #2b8a6833,inset 0 0 22px #2c5fa822;position:relative}
+.panel:before{content:"";position:absolute;left:-6px;top:-6px;width:16px;height:16px;border-left:3px solid var(--g1);border-top:3px solid var(--g1)}
+.panel h2{margin:0 0 10px;font-size:26px;font-weight:400;color:#fff}
+button{font:inherit;color:#fff;background:linear-gradient(180deg,#2f9a72,#1d6b4f);border:2px solid var(--g1);padding:6px 16px;cursor:pointer;font-size:22px;box-shadow:0 0 12px #2b8a6877;text-transform:lowercase}
+button:hover{background:linear-gradient(180deg,#3fb184,#26805f)}
+button.ghost{background:transparent;color:#fff;box-shadow:none}
+button.ghost:hover{background:#4fbf8a26}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #dff7ec;outline-offset:2px}
+input[type=text],select{background:#020c12;color:#fff;border:2px solid var(--g2);font:inherit;font-size:21px;padding:4px 8px;min-width:0}
+::placeholder{color:#ffffffa6}
+input[type=checkbox]{accent-color:var(--g1);width:18px;height:18px}
+.sp{flex:1}
+@keyframes glitch{0%{transform:translateX(0)}25%{transform:translateX(-5px);filter:hue-rotate(40deg)}50%{transform:translateX(5px)}100%{transform:none}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+
+.grid{display:grid;grid-template-columns:1fr;gap:22px}
+@media(min-width:820px){.grid{grid-template-columns:1.1fr .9fr;align-items:start}}
+.stage{display:flex;flex-direction:column;align-items:center}
+.wheelwrap{position:relative;width:min(100%,460px);aspect-ratio:1}
+canvas{width:100%;height:100%;display:block;filter:drop-shadow(0 0 14px #2b8a6888)}
+.ptr{position:absolute;top:-10px;left:50%;width:0;height:0;margin-left:-16px;border-left:16px solid transparent;border-right:16px solid transparent;border-top:38px solid #dff7ec;filter:drop-shadow(0 0 6px var(--g1));z-index:3}
+#spin{margin-top:16px;font-family:'Rubik Mono One',Impact,sans-serif;font-size:22px;padding:12px 34px;letter-spacing:1px}
+#result{margin-top:16px;min-height:76px;width:100%;text-align:center;border:2px dashed var(--g2);padding:8px;font-size:22px;color:#fff;display:flex;flex-direction:column;justify-content:center}
+#result b{font-family:'Rubik Mono One',Impact,sans-serif;font-weight:400;font-size:clamp(22px,6vw,34px);color:#fff;text-shadow:2px 0 #0b2a4a,0 0 14px #2b8a68;word-break:break-word}
+#result.win{animation:glitch .5s steps(2) 3}
+.row{display:flex;gap:8px}
+.row input{flex:1}
+ul{list-style:none;margin:12px 0;padding:0;max-height:280px;overflow-y:auto}
+li{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #2b8a6855}
+li i{width:14px;height:14px;flex:none;border:1px solid var(--g1)}
+li span{flex:1;word-break:break-word}
+li button{padding:0 9px;font-size:20px;min-width:0}
+.bar{display:flex;gap:8px;flex-wrap:wrap}
+.opt{display:flex;align-items:center;gap:8px;margin-top:12px}
+.note{color:#fff;font-size:19px;margin:8px 0 0}
+</style>
+</head>
+<body>
+<div id="bin" aria-hidden="true"></div>
+<main>
+  <h1>spin the<br>wheel</h1>
+  <p class="tag">Add your options, then spin for a random pick.</p>
+  <div class="grid">
+    <section class="panel stage" aria-label="Wheel">
+      <div class="wheelwrap"><div class="ptr"></div><canvas id="c" width="920" height="920" aria-label="Spinning wheel"></canvas></div>
+      <button id="spin">Spin</button>
+      <div id="result" role="status" aria-live="polite">Add at least 2 options to spin</div>
+    </section>
+    <section class="panel" aria-label="Options">
+      <h2>Options</h2>
+      <div class="row"><input type="text" id="in" placeholder="Type an option" maxlength="40" aria-label="New option"><button id="add">Add</button></div>
+      <ul id="list"></ul>
+      <div class="bar"><button class="ghost" id="bulk">Paste many</button><button class="ghost" id="shuf">Shuffle</button><button class="ghost" id="clear">Clear all</button></div>
+      <label class="opt"><input type="checkbox" id="rm"> Remove the winner after each spin</label>
+      <p class="note" id="note"></p>
+    </section>
+  </div>
+</main>
+<script>
+(function(){
+var cv=document.getElementById('c'),x=cv.getContext('2d'),S=920,C=S/2;
+var opts=['pizza','tacos','sushi','ramen','burgers','salad'],rot=0,spinning=false;
+var cols=['#12365f','#1a5a80','#1a7a80','#1f8a6e','#1b6b45','#0f4a30'];
+var $=function(i){return document.getElementById(i)};
+var b='';for(var i=0;i<900;i++)b+=Math.random()<.5?'0':'1';$('bin').textContent=b;
+// binary rain strip
+
+function draw(){
+  x.clearRect(0,0,S,S);
+  var n=opts.length,a=Math.PI*2/Math.max(n,1);
+  x.save();x.translate(C,C);
+  x.beginPath();x.arc(0,0,C-6,0,7);x.fillStyle='#02100f';x.fill();
+  x.lineWidth=6;x.strokeStyle='#3fae86';x.stroke();
+  x.rotate(rot);
+  if(!n){x.fillStyle='#071a38';x.beginPath();x.arc(0,0,C-24,0,7);x.fill();}
+  for(var i=0;i<n;i++){
+    x.beginPath();x.moveTo(0,0);x.arc(0,0,C-24,i*a,(i+1)*a);x.closePath();
+    var g=x.createRadialGradient(0,0,40,0,0,C-24),col=cols[i%cols.length];
+    g.addColorStop(0,'#020c12');g.addColorStop(.4,col);g.addColorStop(1,col);
+    x.fillStyle=g;x.fill();
+    x.lineWidth=3;x.strokeStyle='#4fbf8a';x.stroke();
+    x.save();x.rotate(i*a+a/2);x.textAlign='right';x.textBaseline='middle';
+    var t=opts[i];if(t.length>16)t=t.slice(0,15)+'\u2026';
+    var fs=Math.max(24,Math.min(56,260/Math.max(n,3)*1.4));
+    x.font=fs+"px VT323,monospace";
+    x.fillStyle='#fff';x.shadowColor='#2b8a68';x.shadowBlur=10;
+    x.fillText(t,C-56,0);x.restore();
+  }
+  x.restore();
+  x.save();x.translate(C,C);
+  x.beginPath();x.arc(0,0,44,0,7);x.fillStyle='#020c12';x.fill();x.lineWidth=5;x.strokeStyle='#4fbf8a';x.stroke();
+  x.beginPath();for(var k=0;k<10;k++){var r=k%2?11:26,an=-Math.PI/2+k*Math.PI/5;x.lineTo(Math.cos(an)*r,Math.sin(an)*r)}
+  x.closePath();x.fillStyle='#6fa8f0';x.shadowColor='#4fbf8a';x.shadowBlur=12;x.fill();
+  x.restore();
+}
+function render(){
+  var l=$('list');l.innerHTML='';
+  opts.forEach(function(o,i){
+    var li=document.createElement('li'),sw=document.createElement('i'),sp=document.createElement('span'),bt=document.createElement('button');
+    sw.style.background=cols[i%cols.length];sp.textContent=o;bt.textContent='×';bt.className='ghost';bt.setAttribute('aria-label','Remove '+o);
+    bt.onclick=function(){if(spinning)return;opts.splice(i,1);render()};
+    li.append(sw,sp,bt);l.appendChild(li);
+  });
+  $('spin').disabled=opts.length<2||spinning;
+  $('note').textContent=opts.length+' option'+(opts.length==1?'':'s');
+  if(!spinning&&opts.length<2){$('result').className='';$('result').textContent='Add at least 2 options to spin'}
+  draw();
+}
+function add(){
+  var v=$('in').value.trim();if(!v||spinning)return;
+  opts.push(v);$('in').value='';render();$('in').focus();
+}
+$('add').onclick=add;
+$('in').addEventListener('keydown',function(e){if(e.key==='Enter')add()});
+$('bulk').onclick=function(){
+  if(spinning)return;
+  var t=prompt('Paste options, one per line (or separated by commas):');
+  if(!t)return;
+  t.split(/[\n,]+/).map(function(s){return s.trim()}).filter(Boolean).forEach(function(s){opts.push(s.slice(0,40))});
+  render();
+};
+$('shuf').onclick=function(){if(spinning)return;for(var i=opts.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=opts[i];opts[i]=opts[j];opts[j]=t}render()};
+$('clear').onclick=function(){if(spinning)return;opts=[];render()};
+
+$('spin').onclick=function(){
+  if(spinning||opts.length<2)return;
+  spinning=true;$('spin').disabled=true;
+  var res=$('result');res.className='';res.textContent='Spinning...';
+  var n=opts.length,a=Math.PI*2/n;
+  var pick=Math.floor(Math.random()*n);
+  // pointer is at top (-PI/2). segment center angle must land there.
+  var target=-Math.PI/2-(pick*a+a/2)+(Math.random()-.5)*a*.8;
+  var cur=((rot%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
+  var tn=((target%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
+  var delta=(tn-cur+Math.PI*2)%(Math.PI*2)+Math.PI*2*(6+Math.floor(Math.random()*3));
+  var start=rot,dur=5200,t0=performance.now();
+  (function f(now){
+    var p=Math.min((now-t0)/dur,1),e=1-Math.pow(1-p,4);
+    rot=start+delta*e;draw();
+    if(p<1)return requestAnimationFrame(f);
+    spinning=false;
+    var w=opts[pick];
+    res.className='win';res.innerHTML='<span>The winner is:</span><b></b>';res.querySelector('b').textContent=w;
+    if($('rm').checked){opts.splice(pick,1);}
+    var keep=res.innerHTML,kc=res.className;
+    render();
+    if(opts.length>=2||$('rm').checked){res.innerHTML=keep;res.className=kc}
+  })(t0);
+};
+render();
+document.fonts&&document.fonts.ready.then(draw);
+})();
+</script>
+</body>
+</html>

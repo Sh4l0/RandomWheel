@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Day Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#030d14;--g1:#4fbf8a;--g2:#2b8a68;--g3:#0e4a3a;--bl:#6fa8f0;--ink:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*:before,*:after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;color:var(--ink);font-family:'VT323','Courier New',monospace;font-size:21px;overflow-x:hidden;background-color:var(--bg);
+background-image:radial-gradient(ellipse at 15% 8%,#2c5fa844,transparent 50%),radial-gradient(ellipse at 88% 78%,#1f8a6444,transparent 55%),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cg fill='none' stroke='%2352c98f' stroke-opacity='.15' stroke-width='3'%3E%3Cpath d='M30 10l6 18 18 2-14 11 5 18-15-10-15 10 5-18L6 30l18-2z'/%3E%3Cpath d='M120 90l4 11 11 1-9 7 3 11-9-7-9 7 3-11-9-7 11-1z'/%3E%3C/g%3E%3C/svg%3E"),linear-gradient(165deg,#071a38 0%,#0a3550 28%,#0b4a47 55%,#0b3d26 80%,#04150d 100%);background-attachment:fixed}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:5;background:repeating-linear-gradient(0deg,#0000 0 2px,#00000055 2px 4px);mix-blend-mode:multiply}
+body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:4;opacity:.12;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E")}
+#bin{position:fixed;top:0;right:4px;width:70px;font-size:15px;line-height:1;color:#fff;opacity:.35;word-break:break-all;pointer-events:none;height:100%;overflow:hidden}
+main{position:relative;z-index:2;max-width:760px;margin:0 auto;padding:22px 16px 40px}
+h1{font-family:'Rubik Mono One',Impact,sans-serif;font-weight:400;font-size:clamp(34px,9vw,76px);line-height:.92;margin:0 0 6px;color:#fff;text-shadow:3px 0 #12365f,0 0 18px #2b8a68aa;transform:skewX(-6deg);letter-spacing:-1px}
+.tag{margin:0 0 20px;color:#fff;font-size:22px}
+.panel,.hour{border:2px solid var(--g2);background:#03121acc;padding:14px;box-shadow:0 0 14px #2b8a6833,inset 0 0 22px #2c5fa822;position:relative}
+.panel:before{content:"";position:absolute;left:-6px;top:-6px;width:16px;height:16px;border-left:3px solid var(--g1);border-top:3px solid var(--g1)}
+.panel h2{margin:0 0 10px;font-size:26px;font-weight:400;color:#fff}
+button{font:inherit;color:#fff;background:linear-gradient(180deg,#2f9a72,#1d6b4f);border:2px solid var(--g1);padding:6px 16px;cursor:pointer;font-size:22px;box-shadow:0 0 12px #2b8a6877;text-transform:lowercase}
+button:hover{background:linear-gradient(180deg,#3fb184,#26805f)}
+button.ghost{background:transparent;color:#fff;box-shadow:none}
+button.ghost:hover{background:#4fbf8a26}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #dff7ec;outline-offset:2px}
+input[type=text],select{background:#020c12;color:#fff;border:2px solid var(--g2);font:inherit;font-size:21px;padding:4px 8px;min-width:0}
+::placeholder{color:#ffffffa6}
+input[type=checkbox]{accent-color:var(--g1);width:18px;height:18px}
+.sp{flex:1}
+@keyframes glitch{0%{transform:translateX(0)}25%{transform:translateX(-5px);filter:hue-rotate(40deg)}50%{transform:translateX(5px)}100%{transform:none}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+
+.panel{margin-bottom:16px}
+.cfg{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.cfg label{display:flex;align-items:center;gap:8px;color:#fff}
+#saved{color:#fff;font-size:19px}
+.hour{margin-bottom:12px;padding:10px 12px}
+.hour.now{border-color:var(--g1);box-shadow:0 0 20px #4fbf8a55,inset 0 0 22px #2c5fa822}
+.head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.time{font-family:'Rubik Mono One',Impact,sans-serif;font-size:20px;color:#fff;text-shadow:0 0 10px #2b8a6888;min-width:104px}
+.bar{color:#fff}
+.loc{flex:1;display:flex;align-items:center;gap:8px;min-width:200px;color:#fff}
+.loc input{flex:1;width:100%}
+.items{list-style:none;margin:8px 0 6px;padding:0}
+.items li{display:flex;align-items:center;gap:8px;padding:2px 0}
+.items li span{flex:1;word-break:break-word}
+.items li.done span{text-decoration:line-through;opacity:.5}
+.items button{padding:0 9px;font-size:19px;min-width:0}
+.add{display:flex;gap:8px}
+.add input{flex:1}
+</style>
+</head>
+<body>
+<div id="bin" aria-hidden="true"></div>
+<main>
+  <h1>plan the<br>day</h1>
+  <p class="tag">Choose which hours to show, then fill in each one. Changes save automatically.</p>
+  <section class="panel cfg" aria-label="Hours to display">
+    <label>From <select id="start"></select></label>
+    <label>To <select id="end"></select></label>
+    <span class="sp"></span>
+    <span id="saved" role="status"></span>
+    <button class="ghost" id="reset">Clear day</button>
+  </section>
+  <div id="hours"></div>
+</main>
+<script>
+(function(){
+var KEY='day-planner-v1',$=function(i){return document.getElementById(i)};
+var b='';for(var i=0;i<900;i++)b+=Math.random()<.5?'0':'1';$('bin').textContent=b;
+var st={start:8,end:22,hours:{}};
+try{var raw=localStorage.getItem(KEY);if(raw){var p=JSON.parse(raw);if(p&&typeof p==='object'){st.start=+p.start>=0?+p.start:8;st.end=+p.end>=0?+p.end:22;st.hours=p.hours||{}}}}catch(e){}
+var tm;
+function save(){
+  try{localStorage.setItem(KEY,JSON.stringify(st));$('saved').textContent='Saved'}
+  catch(e){$('saved').textContent='Could not save (storage blocked)'}
+  clearTimeout(tm);tm=setTimeout(function(){$('saved').textContent=''},1800);
+}
+function lbl(h){var s=h<12?'am':'pm',n=h%12===0?12:h%12;return n+':00 '+s}
+function get(h){if(!st.hours[h])st.hours[h]={loc:'',items:[]};return st.hours[h]}
+['start','end'].forEach(function(id){
+  var s=$(id);for(var h=0;h<24;h++){var o=document.createElement('option');o.value=h;o.textContent=lbl(h);s.appendChild(o)}
+  s.value=st[id];
+  s.onchange=function(){
+    st[id]=+s.value;
+    if(st.end<st.start){if(id==='start'){st.end=st.start;$('end').value=st.end}else{st.start=st.end;$('start').value=st.start}}
+    save();render();
+  };
+});
+function el(t,c,tx){var e=document.createElement(t);if(c)e.className=c;if(tx!=null)e.textContent=tx;return e}
+function render(){
+  var box=$('hours');box.innerHTML='';
+  var now=new Date().getHours();
+  for(var h=st.start;h<=st.end;h++)(function(h){
+    var d=get(h),sec=el('section','hour'+(h===now?' now':''));
+    var head=el('div','head');
+    head.appendChild(el('span','time',lbl(h)));
+    head.appendChild(el('span','bar','|'));
+    var lw=el('label','loc','Location:'),li=el('input');
+    li.type='text';li.value=d.loc;li.placeholder='Where are you?';li.maxLength=60;li.setAttribute('aria-label','Location for '+lbl(h));
+    li.oninput=function(){d.loc=li.value;save()};
+    lw.appendChild(li);head.appendChild(lw);sec.appendChild(head);
+    var ul=el('ul','items');
+    d.items.forEach(function(it,i){
+      var r=el('li',it.d?'done':''),cb=el('input');cb.type='checkbox';cb.checked=!!it.d;cb.setAttribute('aria-label','Done: '+it.t);
+      cb.onchange=function(){it.d=cb.checked;r.className=it.d?'done':'';save()};
+      var x=el('button','ghost','×');x.setAttribute('aria-label','Remove '+it.t);
+      x.onclick=function(){d.items.splice(i,1);save();render()};
+      r.append(cb,el('span','','- '+it.t),x);ul.appendChild(r);
+    });
+    sec.appendChild(ul);
+    var ad=el('div','add'),ai=el('input');ai.type='text';ai.placeholder='Add an action item';ai.maxLength=100;ai.setAttribute('aria-label','New action item for '+lbl(h));
+    var ab=el('button','','Add');
+    function add(){var v=ai.value.trim();if(!v)return;d.items.push({t:v,d:false});save();render();
+      var n=$('hours').querySelectorAll('.hour')[h-st.start];if(n)n.querySelector('.add input').focus()}
+    ab.onclick=add;ai.onkeydown=function(e){if(e.key==='Enter')add()};
+    ad.append(ai,ab);sec.appendChild(ad);box.appendChild(sec);
+  })(h);
+}
+$('reset').onclick=function(){
+  if(!confirm('Clear all locations and action items for every hour?'))return;
+  st.hours={};save();render();
+};
+render();
+document.fonts&&document.fonts.ready.then(function(){});
+})();
+</script>
+</body>
+</html>
